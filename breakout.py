@@ -25,6 +25,8 @@ blue = (90, 220, 237)
 cols = 6
 rows = 6
 
+game_over = False
+
 def draw_text(string, font, color, x, y):
     text = font.render(string, True, color)
     screen.blit(text, (x, y))
@@ -76,20 +78,17 @@ class Paddle():
         self.speed = 10
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.color = paddle_color
-        self.direction = 0
 
     def draw_paddle(self):
         pygame.draw.rect(screen, paddle_color, self.rect)
 
     def move(self):
-        self.direction = 0
-        key = pygame.key.get_pressed()
-        if key[K_LEFT] and self.rect.left > 0:
-            self.rect.x -= self.speed
-            self.direction = -1
-        if key[K_RIGHT] and self.rect.right < screen_width:
-            self.rect.x += self.speed
-            self.direction = 1
+        if not game_over:
+            key = pygame.key.get_pressed()
+            if key[K_LEFT] and self.rect.left > 0:
+                self.rect.x -= self.speed
+            if key[K_RIGHT] and self.rect.right < screen_width:
+                self.rect.x += self.speed
 
 class Ball():
     def __init__(self) -> None:
@@ -104,6 +103,7 @@ class Ball():
         self.game_over = False
 
     def move(self):
+        global game_over
         if self.ball_moving:
             self.rect.x += self.speed * self.direction[0]
             self.rect.y += self.speed * -self.direction[1]
@@ -114,16 +114,7 @@ class Ball():
         if self.rect.left == 0:
             self.direction[0] = -self.direction[0]
         if self.rect.bottom == screen_height:
-            self.game_over = True
-
-        if self.game_over:
-            self.rect.x = (screen_width // 2) - (self.width // 2)
-            self.rect.y = screen_height - (self.height * 2) - 30
-            self.direction = [1, 1]
-            wall.build_wall()
-            draw_text("Game over", main_font, text_color, 100, 200)
-            draw_text("Press Spacebar to restart", sub_font, text_color, 100, 300)
-            self.ball_moving = False
+            game_over = True
 
         if self.rect.colliderect(paddle):
             self.direction[1] = -self.direction[1]
@@ -140,12 +131,6 @@ class Ball():
                         item[1] -= 1
                     else:
                         item[0] = [0,0,0,0]
-
-        # Start the game
-        key = pygame.key.get_pressed()
-        if key[K_SPACE]:
-            self.ball_moving = True
-            self.game_over = False
 
     def draw(self):
         pygame.draw.circle(screen, ball_color, (self.rect.x, self.rect.y), self.width)
@@ -167,6 +152,22 @@ while run:
     paddle.draw_paddle()
     paddle.move()
 
+    # Start the game
+    key = pygame.key.get_pressed()
+    if key[K_SPACE]:
+        ball.ball_moving = True
+        game_over = False
+
+    if game_over:
+        ball.rect.x = (screen_width // 2) - (ball.width // 2)
+        ball.rect.y = screen_height - (ball.height * 2) - 30
+        ball.direction = [1, 1]
+        ball.ball_moving = False
+        paddle.rect.x = (screen_width // 2) - (paddle.rect.width // 2)
+        paddle.rect.y = screen_height - (paddle.rect.height * 2)
+        wall.build_wall()
+        draw_text("Game over", main_font, text_color, 100, 200)
+        draw_text("Press Spacebar to restart", sub_font, text_color, 100, 300)
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

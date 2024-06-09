@@ -15,6 +15,8 @@ pygame.display.set_caption("Breakout")
 #Define Colors
 bg_color = (247, 235, 232)
 text_color = (64, 60, 59)
+main_font = pygame.font.SysFont("Bauhaus", 80)
+sub_font = pygame.font.SysFont("Bauhaus", 40)
 paddle_color = ball_color = (103, 82, 81)
 red = (232, 94, 94)
 green = (59, 220, 139)
@@ -22,6 +24,10 @@ blue = (90, 220, 237)
 
 cols = 6
 rows = 6
+
+def draw_text(string, font, color, x, y):
+    text = font.render(string, True, color)
+    screen.blit(text, (x, y))
 
 class Wall():
     def __init__(self) -> None:
@@ -95,6 +101,7 @@ class Ball():
         self.speed = 5
         self.direction = [1, 1]
         self.ball_moving = False
+        self.game_over = False
 
     def move(self):
         if self.ball_moving:
@@ -106,6 +113,17 @@ class Ball():
             self.direction[1] = -self.direction[1]
         if self.rect.left == 0:
             self.direction[0] = -self.direction[0]
+        if self.rect.bottom == screen_height:
+            self.game_over = True
+
+        if self.game_over:
+            self.rect.x = (screen_width // 2) - (self.width // 2)
+            self.rect.y = screen_height - (self.height * 2) - 30
+            self.direction = [1, 1]
+            wall.build_wall()
+            draw_text("Game over", main_font, text_color, 100, 200)
+            draw_text("Press Spacebar to restart", sub_font, text_color, 100, 300)
+            self.ball_moving = False
 
         if self.rect.colliderect(paddle):
             self.direction[1] = -self.direction[1]
@@ -127,6 +145,7 @@ class Ball():
         key = pygame.key.get_pressed()
         if key[K_SPACE]:
             self.ball_moving = True
+            self.game_over = False
 
     def draw(self):
         pygame.draw.circle(screen, ball_color, (self.rect.x, self.rect.y), self.width)

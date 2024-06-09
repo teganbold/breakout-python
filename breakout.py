@@ -114,13 +114,14 @@ class Ball():
             for item in row:
                 if self.rect.colliderect(item[0]):
                     #check if from below:
-                    self.direction[1] = -self.direction[1]
+                    if abs(self.rect.top - item[0].bottom) == 5 or abs(self.rect.bottom - item[0].top) == 5:
+                        self.direction[1] = -self.direction[1]
+                    elif abs(self.rect.left - item[0].right) == 5 or abs(self.rect.right - item[0].left) == 5:
+                        self.direction[0] = -self.direction[0]
                     if item[1] > 1:
                         item[1] -= 1
                     else:
                         item[0] = [0,0,0,0]
-
-
 
         # Start the game
         key = pygame.key.get_pressed()

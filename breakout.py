@@ -106,16 +106,26 @@ class Ball():
             self.direction[1] = -self.direction[1]
         if self.rect.left == 0:
             self.direction[0] = -self.direction[0]
+
+        if self.rect.colliderect(paddle):
+            self.direction[1] = -self.direction[1]
         
+        for row in wall.blocks:
+            for item in row:
+                if self.rect.colliderect(item[0]):
+                    #check if from below:
+                    self.direction[1] = -self.direction[1]
+                    if item[1] > 1:
+                        item[1] -= 1
+                    else:
+                        item[0] = [0,0,0,0]
+
+
 
         # Start the game
         key = pygame.key.get_pressed()
         if key[K_SPACE]:
             self.ball_moving = True
-
-    def reverse_direction(self):
-        pass
-
 
     def draw(self):
         pygame.draw.circle(screen, ball_color, (self.rect.x, self.rect.y), self.width)
